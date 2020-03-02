@@ -86,32 +86,34 @@ int SimpleMbedCloudClient::init(bool format) {
         printf("[SMCC] ERROR - Mutex creation for mbed_trace failed!\n");
         return 1;
     }
-
+    printf("\n\n---1---.\n\n");
     // Initialize mbed trace
     mbed_trace_init();
     mbed_trace_helper_create_mutex();
     mbed_trace_mutex_wait_function_set(mbed_trace_helper_mutex_wait);
     mbed_trace_mutex_release_function_set(mbed_trace_helper_mutex_release);
-
+    printf("\n\n---2---.\n\n");
     // Initialize the FCC
     int status = fcc_init();
     if (status != FCC_STATUS_SUCCESS && status != FCC_STATUS_ENTROPY_ERROR && status != FCC_STATUS_ROT_ERROR) {
         tr_error("Factory Client Configuration failed with status %d", status);
         return 1;
     }
-
+    printf("\n\n---3---.\n\n");
     status = _storage.init();
+    printf("\n\n---3.2---.\n\n");
     if (status != FCC_STATUS_SUCCESS) {
         tr_error("Failed to initialize storage layer (%d)", status);
         return 1;
     }
-
+    printf("\n\n---4---.\n\n");
     status = _storage.sotp_init();
     if (status != FCC_STATUS_SUCCESS) {
         tr_error("Could not initialize SOTP (%d)", status);
         fcc_finalize();
         return 1;
     }
+    printf("\n\n---5---.\n\n");
 
 #if RESET_STORAGE
     status = reset_storage();
@@ -126,18 +128,20 @@ int SimpleMbedCloudClient::init(bool format) {
         return 1;
     }
 #endif
-
+    printf("\n\n---6---.\n\n");
     status = verify_cloud_configuration(format);
-
+    printf("\n\n---7---.\n\n");
     if (status != 0) {
     // This is designed to simplify user-experience by auto-formatting the
     // primary storage if no valid certificates exist.
     // This should never be used for any kind of production devices.
 #if MBED_CONF_APP_FORMAT_STORAGE_LAYER_ON_ERROR == 1
-        tr_info("Could not load certificate (e.g. no certificates or RoT might have changed), resetting storage...");
-        status = reset_storage();
-        if (status != FCC_STATUS_SUCCESS) {
-            return status;
+    printf("\n\n---8---.\n\n");
+    tr_info("Could not load certificate (e.g. no certificates or RoT might have changed), resetting storage...");
+    status = reset_storage();
+    if (status != FCC_STATUS_SUCCESS)
+    {
+        return status;
         }
         status = _storage.sotp_init();
         if (status != FCC_STATUS_SUCCESS) {
@@ -147,6 +151,7 @@ int SimpleMbedCloudClient::init(bool format) {
         if (status != 0) {
             return status;
         }
+    printf("\n\n---8---.\n\n");
 #else
         return 1;
 #endif

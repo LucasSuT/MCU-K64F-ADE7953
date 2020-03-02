@@ -26,6 +26,7 @@
 
 // This is for single or dual partition mode. This is supposed to be used with storage for data e.g. SD card.
 // Enable by 1/disable by 0.
+#define MCC_PLATFORM_PARTITION_MODE 0
 #ifndef MCC_PLATFORM_PARTITION_MODE
 #define MCC_PLATFORM_PARTITION_MODE 0
 #endif

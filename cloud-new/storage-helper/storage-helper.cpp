@@ -29,11 +29,11 @@ StorageHelper::StorageHelper(BlockDevice *bd, FileSystem *fs)
 int StorageHelper::init() {
     static bool init_done = false;
     int status = 0;
-
+    printf("\nBlockDevice size = %llu\n", _bd->size());
     if(!init_done) {
         if (_bd) {
             status = _bd->init();
-
+            printf("\nBlockDevice size = %llu\n", _bd->size());
             if (status != BD_ERROR_OK) {
                 tr_warn("bd->init() failed with %d", status);
                 return -1;
@@ -50,10 +50,13 @@ int StorageHelper::init() {
         }
 
 #if (MCC_PLATFORM_PARTITION_MODE == 1)
+        printf("\nMCC_PLATFORM_PARTITION_MODE = 1.\n");
 #if (NUMBER_OF_PARTITIONS > 0)
-        status = init_and_mount_partition(&fs1, &part1, PRIMARY_PARTITION_NUMBER, ((const char*) MOUNT_POINT_PRIMARY+1));
+        printf("\nNUMBER_OF_PARTITIONS > 0.\n");
+            status = init_and_mount_partition(&fs1, &part1, PRIMARY_PARTITION_NUMBER, ((const char *)MOUNT_POINT_PRIMARY + 1));
         if (status != 0) {
 #if (MCC_PLATFORM_AUTO_PARTITION == 1)
+            printf("\nMCC_PLATFORM_AUTO_PARTITION == 1.\n");
             status = create_partitions();
             if (status != 0) {
                 return status;
@@ -65,6 +68,7 @@ int StorageHelper::init() {
         }
 
 #if (NUMBER_OF_PARTITIONS == 2)
+        printf("\nNUMBER_OF_PARTITIONS = 2.\n");
         status = init_and_mount_partition(&fs2, &part2, SECONDARY_PARTITION_NUMBER, ((const char*) MOUNT_POINT_SECONDARY+1));
         if (status != 0) {
 #if (MCC_PLATFORM_AUTO_PARTITION == 1)
@@ -83,7 +87,7 @@ int StorageHelper::init() {
 #endif
 #endif // (NUMBER_OF_PARTITIONS > 0)
 #else  // Else for #if (MCC_PLATFORM_PARTITION_MODE == 1)
-
+    printf("\nMCC_PLATFORM_PARTITION_MODE != 1.\n");
     fs1 = _fs;
     part1 = _bd;                   /* required for mcc_platform_reformat_storage */
     status = test_filesystem(fs1, _bd);

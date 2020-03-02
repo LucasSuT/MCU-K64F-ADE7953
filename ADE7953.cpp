@@ -136,7 +136,7 @@ REG_VALUE ADE7953::read(uint16_t Reg)
                 return *regValue;
             }
             // else printf("Read - cant read!\n");
-            wait_ms(500);
+            wait_ms(100);
         }
     }
     return 0;

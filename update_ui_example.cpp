@@ -78,69 +78,69 @@ void update_authorize_priority_handler(int32_t request, uint64_t priority)
     }
 }
 
-void update_progress(uint32_t progress, uint32_t total)
-{
-    uint8_t percent = (uint8_t)((uint64_t)progress * 100 / total);
+// void update_progress(uint32_t progress, uint32_t total)
+// {
+//     uint8_t percent = (uint8_t)((uint64_t)progress * 100 / total);
 
-/* only show progress bar if debug trace is disabled */
-#if !defined(MBED_CONF_MBED_TRACE_ENABLE) \
-    && !ARM_UC_ALL_TRACE_ENABLE \
-    && !ARM_UC_HUB_TRACE_ENABLE
+// /* only show progress bar if debug trace is disabled */
+// #if !defined(MBED_CONF_MBED_TRACE_ENABLE) \
+//     && !ARM_UC_ALL_TRACE_ENABLE \
+//     && !ARM_UC_HUB_TRACE_ENABLE
 
-    printf("\rDownloading: [");
-    for (uint8_t index = 0; index < 50; index++)
-    {
-        if (index < percent / 2)
-        {
-            printf("+");
-        }
-        else if (index == percent / 2)
-        {
-            static uint8_t old_max = 0;
-            static uint8_t counter = 0;
+//     printf("\rDownloading: [");
+//     for (uint8_t index = 0; index < 50; index++)
+//     {
+//         if (index < percent / 2)
+//         {
+//             printf("+");
+//         }
+//         else if (index == percent / 2)
+//         {
+//             static uint8_t old_max = 0;
+//             static uint8_t counter = 0;
 
-            if (index == old_max)
-            {
-                counter++;
-            }
-            else
-            {
-                old_max = index;
-                counter = 0;
-            }
+//             if (index == old_max)
+//             {
+//                 counter++;
+//             }
+//             else
+//             {
+//                 old_max = index;
+//                 counter = 0;
+//             }
 
-            switch (counter % 4)
-            {
-                case 0:
-                    printf("/");
-                    break;
-                case 1:
-                    printf("-");
-                    break;
-                case 2:
-                    printf("\\");
-                    break;
-                case 3:
-                default:
-                    printf("|");
-                    break;
-            }
-        }
-        else
-        {
-            printf(" ");
-        }
-    }
-    printf("] %d %%", percent);
-    fflush(stdout);
-#else
-    printf("Downloading: %d %%\r\n", percent);
-#endif
+//             switch (counter % 4)
+//             {
+//                 case 0:
+//                     printf("/");
+//                     break;
+//                 case 1:
+//                     printf("-");
+//                     break;
+//                 case 2:
+//                     printf("\\");
+//                     break;
+//                 case 3:
+//                 default:
+//                     printf("|");
+//                     break;
+//             }
+//         }
+//         else
+//         {
+//             printf(" ");
+//         }
+//     }
+//     printf("] %d %%", percent);
+//     fflush(stdout);
+// #else
+//     printf("Downloading: %d %%\r\n", percent);
+// #endif
 
-    if (progress == total)
-    {
-        printf("\r\nDownload completed\r\n");
-    }
-}
+//     if (progress == total)
+//     {
+//         printf("\r\nDownload completed\r\n");
+//     }
+// }
 
 #endif // MBED_CLOUD_CLIENT_SUPPORT_UPDATE
