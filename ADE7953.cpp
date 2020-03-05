@@ -1,20 +1,16 @@
 #include "ADE7953.h"
 
-// UARTSerial uart(PA_9, PA_10, 4800);
-// UARTSerial *uart = new UARTSerial(PE_1, PE_0, 4800);
-
 bool ADE7953::init()
 {
     if(read(0x102) != 0x8004)return Fail; //check UART communication
-    // verification();
     write(0x102,0x04); //lock the communication
-    verification();
-    // write(0x040, 0x07); //internal registers write protection
-    // verification();
-    read(0x800);
-    verification();
-    // write(0x800,0x01);
-    // verification();
+    write(0x280, 0x489500); //Current channel A gain calibration
+    write(0x28C, 0x499000); //Current channel B gain calibration
+    write(0x281, 0x188500); //Voltage channel gain calibration
+    write(0x282, 0x699500); //Current channel A Active power gain calibration
+    write(0x28E, 0x295950); //Current channel B Active power gain calibration
+    write(0x040, 0x07); //internal registers write protection
+    read(0x800); //基準電壓輸入
     return Success;
 }
 
@@ -23,9 +19,9 @@ int ADE7953::getInstVoltage() //Instantaneous voltage (voltage channel)
     return (read(0x218));
 }
 
-int ADE7953::getVrms() //VRMS register
+double ADE7953::getVrms() //VRMS register
 {
-    return (read(0x21C));
+    return (read(0x21C)/10000.0);
 }
 
 //*****************************Channel A*****************************
@@ -35,9 +31,9 @@ int ADE7953::getInstCurrentA() //Instantaneous current (Current Channel A)
     return (read(0x216));
 }
 
-int ADE7953::getIrmsA() //IRMS register (Current Channel A)
+double ADE7953::getIrmsA() //IRMS register (Current Channel A)
 {
-    return (read(0x21A));
+    return (read(0x21A)/100000.0);
 }
 
 int ADE7953::getActiveEnergyA() //Active energy (Current Channel A)
@@ -45,14 +41,34 @@ int ADE7953::getActiveEnergyA() //Active energy (Current Channel A)
     return (read(0x21E));
 }
 
+double ADE7953::getInstActivePowerA() //Active power (Current Channel A)
+{
+    return read(0x212)/100.0;
+}
+
 int ADE7953::getReactiveEnergyA() //Reactive energy (Current Channel A)
 {
     return (read(0x220));
 }
 
+int ADE7953::getInstReactivePowerA()
+{
+    return read(0x214);
+}
+
 int ADE7953::getApparentEnergyA() //Apparent energy (Current Channel A)
 {
     return (read(0x222));
+}
+
+int ADE7953::getInstApparentPowerA()
+{
+    return read(0x210);
+}
+
+int ADE7953::getPowerFactorA()
+{
+    return read(0x10A);
 }
 
 //*****************************Channel B*****************************
@@ -62,9 +78,9 @@ int ADE7953::getInstCurrentB() //Instantaneous current (Current Channel B)
     return (read(0x217));
 }
 
-int ADE7953::getIrmsB() //IRMS register (Current Channel B)
+double ADE7953::getIrmsB() //IRMS register (Current Channel B)
 {
-    return (read(0x21B));
+    return (read(0x21B)/100000.0);
 }
 
 int ADE7953::getActiveEnergyB() //Active energy (Current Channel B)
@@ -72,14 +88,34 @@ int ADE7953::getActiveEnergyB() //Active energy (Current Channel B)
     return (read(0x21F));
 }
 
+double ADE7953::getInstActivePowerB() //Active power (Current Channel B)
+{
+    return read(0x213)/100.0;
+}
+
 int ADE7953::getReactiveEnergyB() //Reactive energy (Current Channel B)
 {
     return (read(0x221));
 }
 
+int ADE7953::getInstReactivePowerB()
+{
+    return read(0x215);
+}
+
 int ADE7953::getApparentEnergyB() //Apparent energy (Current Channel B)
 {
     return (read(0x223));
+}
+
+int ADE7953::getInstApparentPowerB()
+{
+    return read(0x211);
+}
+
+int ADE7953::getPowerFactorB()
+{
+    return read(0x10B);
 }
 
 //*****************************Test function*****************************
