@@ -1,0 +1,137 @@
+[SCLAPP:SlcApp_RestoreConfig:1333]: version                                = aa10(->16)
+[SCLAPP:SlcApp_RestoreConfig:1334]: store_node_registered                  = 1
+[SCLAPP:SlcApp_RestoreConfig:1336]: sys_watchdog_timeout_sec               = 1800
+[SCLAPP:SlcApp_RestoreConfig:1337]: reg_watchdog_timeout_sec               = 1260
+[SCLAPP:SlcApp_RestoreConfig:1338]: light_sensor_timeout_sec               = 3600
+[SCLAPP:SlcApp_RestoreConfig:1340]: first_upload_procedure - random        = 1
+[SCLAPP:SlcApp_RestoreConfig:1341]: first_upload_procedure - cycle_time    = 120
+[SCLAPP:SlcApp_RestoreConfig:1342]: first_upload_procedure - diff_time     = 30
+[SCLAPP:SlcApp_RestoreConfig:1343]: cycle_upload_procedure - random           = 1
+[SCLAPP:SlcApp_RestoreConfig:1344]: cycle_upload_procedure - cycle_time    = 420
+[SCLAPP:SlcApp_RestoreConfig:1345]: cycle_upload_procedure - diff_time     = 120
+[SCLAPP:SlcApp_RestoreConfig:1347]: cycle_upload_noderegister - random     = 1
+[SCLAPP:SlcApp_RestoreConfig:1348]: cycle_upload_noderegister - cycle_time = 300
+[SCLAPP:SlcApp_RestoreConfig:1349]: cycle_upload_noderegister - diff_time  = 5
+[SCLAPP:SlcApp_RestoreConfig:1350]: cycle_upload_status - random                  = 1
+[SCLAPP:SlcApp_RestoreConfig:1351]: cycle_upload_status - cycle_time       = 300
+[SCLAPP:SlcApp_RestoreConfig:1352]: cycle_upload_status - diff_time        = 7
+[SCLAPP:SlcApp_RestoreConfig:1353]: cycle_upload_data - random             = 1
+[SCLAPP:SlcApp_RestoreConfig:1354]: cycle_upload_data - cycle_time         = 3600
+[SCLAPP:SlcApp_RestoreConfig:1355]: cycle_upload_data - diff_time          = 45
+[SCLAPP:SlcApp_RestoreConfig:1356]: deregister - keep_online               = 0
+[SCLAPP:SlcApp_RestoreConfig:1357]: deregister - disconnect_type           = 1
+[SCLAPP:SlcApp_RestoreConfig:1358]: deregister - keep_online_time          = 180
+[SCLAPP:SlcApp_RestoreConfig:1359]: cycle_upload_data_enable               = 1
+[SCLAPP:SlcApp_RestoreConfig:1360]: node_registered                        = 1
+[SCLAPP:SlcApp_RestoreConfig:1361]: //-----------------------------------------//
+[SCLAPP:SlcApp_RestoreConfig:1362]: config size: 36, config buff size: 36
+
+
+
+
+version									10 aa 
+store_node_registered					01 
+reserved								00 
+sys_watchdog_timeout_sec				08 07 00 00 
+reg_watchdog_timeout_sec				ec 04 
+light_sensor_timeout_sec				10 0e 
+<time struct>first_upload_procedure		78 80 1e 00 
+<time struct>cycle_upload_procedure		a4 81 78 00 
+<time struct>cycle_upload_noderegister	2c 81 05 00 
+<time struct>cycle_upload_status			2c 81 07 00 
+<time struct>cycle_upload_data			10 8e 2d 00 
+<dereg struct>_SlcApp_DeregisterStruct	a2 05 
+cycle_upload_data_enable				01 
+node_registered							01
+
+typedef union {
+	struct {
+		uint16_t					version;						// config version
+		bool						store_node_registered;			// true:  restore "node_registered" from file system when boot-up
+																	// false: "node_registered" will be set to false when each boot-up
+		uint8_t						reserved;						// reserved for aligment
+
+		uint32_t					sys_watchdog_timeout_sec;		// for system watchdog, trigger watchdog to reset mcu if overtime
+																	// range: 0~4294967295 (49710 days)
+		uint16_t					reg_watchdog_timeout_sec;		// for waiting node_registered, disconnect and wait for next procedure if overtime
+																	// range: 0~65535 (18hr)
+		uint16_t					light_sensor_timeout_sec;		// to confirm keeping communication with cloud, for trigger light sensor mode if overtime
+																	// range: 0~65535 (18hr)
+		_SlcApp_CycleTimeStruct		first_upload_procedure;			// for trigger 1st upload procedure
+		_SlcApp_CycleTimeStruct		cycle_upload_procedure;			// for trigger upload procedure periodically after node has registered
+		_SlcApp_CycleTimeStruct		cycle_upload_noderegister;		// for keep upload node_registered value to Pelion before device registered
+		_SlcApp_CycleTimeStruct		cycle_upload_status;			// for upload ststus periodically
+		_SlcApp_CycleTimeStruct		cycle_upload_data;				// for upload data periodically
+		
+		_SlcApp_DeregisterStruct	deregister;						// for scenario after upload procedure
+		bool						cycle_upload_data_enable;		// true: enable upload data periodically
+																	// false: disable upload data periodically
+		bool						node_registered;				// true: node device has been registered by backend cloud
+																	// false: node device has not been registered by backend cloud
+	} config;
+	uint8_t 						buff[SCLAPP_CONFIGBUFF_LEN];
+} _SlcApp_Config;
+
+//--------------------------------------------------
+<struct>_SlcApp_DeregisterStruct	a2 05 
+05a2	10110100010 ---> 10110100100 05a4 --> a4 05
+
+keep_online			0
+disconnect_type		01
+keep_online_time	10110100 = 180 = 3mins
+
+typedef union {
+	struct {
+		bool						keep_online			: 1;	// range 0~1, 0 for deregister pelion and disconnect network after upload status
+																//			  1 for always keep online, not to deregister nor disconnect
+		_DisconnectType				disconnect_type		: 2;	// range 0~2, 0 for just disconnect network
+																//			  1 to send RAI flag after disconnect network
+																//			  2 to detach after disconnect network
+		uint16_t					keep_online_time	: 13;	// range 0~16383, remain online time in seconds after upload status and then disconnect if keep_online as false
+	} bits;
+	uint8_t 						buff[SLCAPP_DEREGISTERSTRUCT_LEN];
+} _SlcApp_DeregisterStruct;
+
+//--------------------------------------------------
+<time struct>first_upload_procedure		78 80 1e 00 
+1e8078 = 1 1110 1000 0000 0111 1000‬
+cycle_time			000 0000 0111 1000 = 120
+random				1
+diff_time			0001 1110 = 30
+
+typedef union {
+	struct {
+		uint16_t					cycle_time	: 15;		// range 0~32767, periodical time in seconds
+		bool						random		: 1;		// range 0~1, 1: enable random shift, 0: disable random shift
+		uint8_t						diff_time	: 8;		// range 0~255, shift time in seconds
+		uint8_t									: 8;
+	} bits;
+	uint8_t 						buff[SLCAPP_CYCLETIMESTRUCT_LEN];
+} _SlcApp_CycleTimeStruct;
+
+//--------------------------------------------------
+	struct {
+		uint16_t					version;						// config version
+		bool						store_node_registered;			// true:  restore "node_registered" from file system when boot-up
+																	// false: "node_registered" will be set to false when each boot-up
+		uint8_t						reserved;						// reserved for aligment
+
+		uint32_t					sys_watchdog_timeout_sec;		// for system watchdog, trigger watchdog to reset mcu if overtime
+																	// range: 0~4294967295 (49710 days)
+		uint16_t					reg_watchdog_timeout_sec;		// for waiting node_registered, disconnect and wait for next procedure if overtime
+																	// range: 0~65535 (18hr)
+		uint16_t					light_sensor_timeout_sec;		// to confirm keeping communication with cloud, for trigger light sensor mode if overtime
+																	// range: 0~65535 (18hr)
+		_SlcApp_CycleTimeStruct		first_upload_procedure;			// for trigger 1st upload procedure
+		_SlcApp_CycleTimeStruct		cycle_upload_procedure;			// for trigger upload procedure periodically after node has registered
+		_SlcApp_CycleTimeStruct		cycle_upload_noderegister;		// for keep upload node_registered value to Pelion before device registered
+		_SlcApp_CycleTimeStruct		cycle_upload_status;			// for upload ststus periodically
+		_SlcApp_CycleTimeStruct		cycle_upload_data;				// for upload data periodically
+		
+		_SlcApp_DeregisterStruct	deregister;						// for scenario after upload procedure
+		bool						cycle_upload_data_enable;		// true: enable upload data periodically
+																	// false: disable upload data periodically
+		bool						node_registered;				// true: node device has been registered by backend cloud
+																	// false: node device has not been registered by backend cloud
+	} config;
+	uint8_t 						buff[SCLAPP_CONFIGBUFF_LEN];
